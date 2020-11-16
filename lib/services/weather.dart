@@ -1,8 +1,13 @@
+import 'dart:ui';
+
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:weather_widget/WeatherWidget.dart';
 import 'package:weatherit/services/location.dart';
 import 'package:weatherit/services/networking.dart';
 
 const apiKey = 'bed8c9ff24349abaada8b687f44155ff';
-const openWeatherMapURL = 'https://api.openweathermap.org/data/2.5/onecall';
+const openWeatherMapURL = 'https://api.openweathermap.org/data/2.5/weather';
 
 class WeatherModel {
   Future<dynamic> getCityWeather(String cityName) async {
@@ -10,9 +15,8 @@ class WeatherModel {
         '$openWeatherMapURL?q=$cityName&appid=$apiKey&units=metric');
 
     var weatherData = await networkHelper.getData();
-    print(weatherData);
-    return weatherData;
 
+    return weatherData;
   }
 
   Future<dynamic> getLocationWeather() async {
@@ -20,30 +24,10 @@ class WeatherModel {
     await location.getCurrentLocation();
 
     NetworkHelper networkHelper = NetworkHelper(
-        '$openWeatherMapURL?lat=${location.latitude}&lon=${location.longitude}&appid=${apiKey}');
+        '$openWeatherMapURL?lat=${location.latitude}&lon=${location.longitude}&appid=$apiKey&units=metric');
 
     var weatherData = await networkHelper.getData();
     return weatherData;
-  }
-
-  String getWeatherIcon(int condition) {
-    if (condition < 300) {
-      return '🌩';
-    } else if (condition < 400) {
-      return '🌧';
-    } else if (condition < 600) {
-      return '☔️';
-    } else if (condition < 700) {
-      return '☃️';
-    } else if (condition < 800) {
-      return '🌫';
-    } else if (condition == 800) {
-      return '☀️';
-    } else if (condition <= 804) {
-      return '☁️';
-    } else {
-      return '🤷‍';
-    }
   }
 
   String getMessage(int temp) {
@@ -58,3 +42,7 @@ class WeatherModel {
     }
   }
 }
+
+
+
+

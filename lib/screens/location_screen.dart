@@ -1,12 +1,16 @@
-import 'package:flutter/material.dart';
 
+
+import 'package:flutter/material.dart';
 import 'package:weatherit/services/weather.dart';
+import 'package:weather_widget/WeatherWidget.dart';
+
 import 'city_screen.dart';
 
 class LocationScreen extends StatefulWidget {
-  LocationScreen({this.locationWeather});
+  LocationScreen({this.locationWeather, this.condition});
 
   final locationWeather;
+  final condition;
 
   @override
   _LocationScreenState createState() => _LocationScreenState();
@@ -14,8 +18,9 @@ class LocationScreen extends StatefulWidget {
 
 class _LocationScreenState extends State<LocationScreen> {
   WeatherModel weather = WeatherModel();
+
   int temperature;
-  String weatherIcon;
+  Widget weatherbg;
   String cityName;
   String weatherMessage;
 
@@ -24,40 +29,71 @@ class _LocationScreenState extends State<LocationScreen> {
     super.initState();
 
     updateUI(widget.locationWeather);
+    getWeather(widget.condition);
   }
 
   void updateUI(dynamic weatherData) {
     setState(() {
       if (weatherData == null) {
         temperature = 0;
-        weatherIcon = 'Error';
+
         weatherMessage = 'Unable to get weather data';
         cityName = '';
         return;
       }
-      double temp = weatherData['main']['temp'];
+      double temp = weatherData['main']['temp'].toDouble();
       temperature = temp.toInt();
-      var condition = weatherData['weather'][0]['id'];
-      weatherIcon = weather.getWeatherIcon(condition);
+      String condition = weatherData['weather'][0]['main'];
+      print(condition);
+      weatherbg = getWeather(condition);
       weatherMessage = weather.getMessage(temperature);
       cityName = weatherData['name'];
     });
   }
 
+  
+
+
+
+  Widget getWeather(condition) {
+
+      switch (condition) {
+        case "snow": setState(() {
+          return WeatherWidget(
+              size: Size.infinite, weather: 'Sunny', sunConfig: SunConfig());
+
+        });
+        return WeatherWidget(
+            size: Size.infinite, weather: 'Sunny', sunConfig: SunConfig());
+        case "Clouds": setState(() {
+          return  WeatherWidget(
+              size: Size.infinite,
+              weather: 'Cloudy',
+              cloudConfig: CloudConfig());
+        });
+
+
+          return WeatherWidget(
+              size: Size.infinite,
+              weather: 'Cloudy',
+              cloudConfig: CloudConfig());
+
+        case "Smoke":
+          return WeatherWidget(
+              size: Size.infinite,
+              weather: 'Thunder',
+              thunderConfig: ThunderConfig());
+          break;
+
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('images/location_background.jpg'),
-            fit: BoxFit.cover,
-            colorFilter: ColorFilter.mode(
-                Colors.white.withOpacity(0.8), BlendMode.dstATop),
-          ),
-        ),
-        constraints: BoxConstraints.expand(),
-        child: SafeArea(
+      body: Stack(children: [
+        weatherbg,
+        SafeArea(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -87,7 +123,7 @@ class _LocationScreenState extends State<LocationScreen> {
                       );
                       if (typedName != null) {
                         var weatherData =
-                        await weather.getCityWeather(typedName);
+                            await weather.getCityWeather(typedName);
                         updateUI(weatherData);
                       }
                     },
@@ -104,11 +140,6 @@ class _LocationScreenState extends State<LocationScreen> {
                   children: <Widget>[
                     Text(
                       '$temperature°',
-
-                    ),
-                    Text(
-                      weatherIcon,
-
                     ),
                   ],
                 ),
@@ -118,13 +149,12 @@ class _LocationScreenState extends State<LocationScreen> {
                 child: Text(
                   '$weatherMessage in $cityName',
                   textAlign: TextAlign.right,
-
                 ),
               ),
             ],
           ),
         ),
-      ),
+      ]),
     );
   }
 }
